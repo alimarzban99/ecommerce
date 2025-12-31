@@ -43,10 +43,12 @@ func main() {
 	router.Use(middlewares.Throttle())
 	router.Use(middlewares.ZapLogger(zapLogger))
 
+	routers.HealthRouter(router.Group(""))
+
 	apiV1 := router.Group("api/v1/")
 	routers.AuthRouter(apiV1)
 	routers.UserRouter(apiV1)
-	//routers.CategoryRouter(apiV1)
+	routers.CategoryRouter(apiV1)
 	//routers.ProductRouter(apiV1)
 	//routers.OrderRouter(apiV1)
 
