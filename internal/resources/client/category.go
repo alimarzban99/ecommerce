@@ -8,3 +8,8 @@ type CategoryResource struct {
 	Status    string `json:"status"`
 	CreatedAt string `json:"created_at"`
 }
+
+type CategoryPluckResource struct {
+	ID    uint   `json:"id"`
+	Title string `json:"title"`
+}

@@ -19,11 +19,18 @@ func NewCategoryRepository() *CategoryRepository {
 	}
 }
 
-func (r *CategoryRepository) CategoriesList() (*PaginatedResponse[model.Category], error) {
+func (r *CategoryRepository) CategoriesList() ([]client.CategoryPluckResource, error) {
+	var categories []client.CategoryPluckResource
 
-	query := r.database.Model(&model.Category{}).
-		Select("id, title, created_at").
-		Where("status = ?", "active")
+	err := r.database.
+		Model(&model.Category{}).
+		Select("id, title").
+		Where("status = ?", "active").
+		Scan(&categories).Error
 
-	return r.Paginate(query, 1, 50)
+	if err != nil {
+		return nil, err
+	}
+
+	return categories, nil
 }

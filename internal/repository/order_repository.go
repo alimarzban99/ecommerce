@@ -6,7 +6,6 @@ import (
 	"github.com/alimarzban99/ecommerce/internal/resources/client"
 	"github.com/alimarzban99/ecommerce/pkg/database"
 	_ "gorm.io/gorm"
-	"math"
 )
 
 type OrderRepository struct {
@@ -22,69 +21,48 @@ func NewOrderRepository() *OrderRepository {
 }
 
 func (r *OrderRepository) List(filter dtoClient.ListOrderDTO) (*PaginatedResponse[client.OrderResource], error) {
-	// Set default values
-	if filter.Page <= 0 {
-		filter.Page = 1
-	}
-	if filter.Limit <= 0 {
-		filter.Limit = 10
-	}
-	if filter.Limit > 100 {
-		filter.Limit = 100
+	// Set default limit if not provided
+	limit := filter.Limit
+	if limit <= 0 {
+		limit = 10
 	}
 
 	// Build the query using GORM
 	query := r.database.Model(&model.Order{})
 
+	// Sort by newest first (created_at DESC)
 	query = query.Order("created_at DESC")
 
-	var total int64
-	if err := query.Count(&total).Error; err != nil {
-		return nil, err
-	}
-
-	// Apply pagination
-	offset := (filter.Page - 1) * filter.Limit
-	query = query.Offset(offset).Limit(filter.Limit)
-
-	// Execute query and get results
-	var posts []model.Order
-	if err := query.Find(&posts).Error; err != nil {
+	// Use Laravel-like pagination
+	paginated, err := Paginate[model.Order](query, filter.Page, limit)
+	if err != nil {
 		return nil, err
 	}
 
 	// Convert to OrderResource
-	var orders []client.OrderResource
-	for _, post := range posts {
-		order := client.OrderResource{
-			ID:           post.ID,
-			TrackingCode: post.TrackingCode,
-			Amount:       post.FinalAmount,
-			CreatedAt:    post.CreatedAt.Format("2006-01-01T15:04:05"),
+	var orderResources []client.OrderResource
+	for _, order := range paginated.Data {
+		resource := client.OrderResource{
+			ID:           order.ID,
+			TrackingCode: order.TrackingCode,
+			Amount:       order.FinalAmount,
+			CreatedAt:    order.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 		}
 
-		orders = append(orders, order)
+		orderResources = append(orderResources, resource)
 	}
 
-	// Calculate pagination metadata
-	lastPage := int(math.Ceil(float64(total) / float64(filter.Limit)))
-	if lastPage == 0 {
-		lastPage = 1
-	}
-
-	// Build paginated response
-	result := &PaginatedResponse[client.OrderResource]{
-		Data:            orders,
-		Total:           total,
-		PerPage:         filter.Limit,
-		CurrentPage:     filter.Page,
-		LastPage:        lastPage,
-		From:            offset + 1,
-		To:              offset + len(orders),
-		FirstPage:       1,
-		HasNextPage:     filter.Page < lastPage,
-		HasPreviousPage: filter.Page > 1,
-	}
-
-	return result, nil
+	// Return paginated response with converted resources
+	return &PaginatedResponse[client.OrderResource]{
+		Data:            orderResources,
+		Total:           paginated.Total,
+		PerPage:         paginated.PerPage,
+		CurrentPage:     paginated.CurrentPage,
+		LastPage:        paginated.LastPage,
+		From:            paginated.From,
+		To:              paginated.To,
+		FirstPage:       paginated.FirstPage,
+		HasNextPage:     paginated.HasNextPage,
+		HasPreviousPage: paginated.HasPreviousPage,
+	}, nil
 }

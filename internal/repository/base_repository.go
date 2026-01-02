@@ -14,7 +14,6 @@ type Repository[Model any, CrDTO any, UpDTO any, ResSingle any] struct {
 
 type PaginatedResponse[T any] struct {
 	Data            []T   `json:"data"`
-	BaseData        []T   `json:"base_data"`
 	Total           int64 `json:"total"`
 	PerPage         int   `json:"per_page"`
 	CurrentPage     int   `json:"current_page"`
@@ -106,22 +105,50 @@ func (r *Repository[Model, CrDTO, UpDTO, ResSingle]) OrderBY(query *gorm.DB, sor
 	return query
 }
 
-func (r *Repository[Model, CrDTO, UpDTO, ResSingle]) Paginate(db *gorm.DB, page, limit int) (*PaginatedResponse[Model], error) {
-	var items []Model
+// Paginate applies pagination to a GORM query and returns paginated results
+// Usage: Paginate[ModelType](query, page) or Paginate[ModelType](query, page, limit)
+// Default limit is 10, max limit is 100
+//
+// Example:
+//
+//	query := db.Model(&Product{}).Where("status = ?", "active")
+//	result, err := Paginate[Product](query, 1)        // page 1, 10 per page
+//	result, err := Paginate[Product](query, 1, 20)    // page 1, 20 per page
+func Paginate[T any](query *gorm.DB, page int, limit ...int) (*PaginatedResponse[T], error) {
+	// Default limit is 10
+	perPage := 10
+	if len(limit) > 0 && limit[0] > 0 {
+		perPage = limit[0]
+	}
+
+	// Normalize parameters
+	if page <= 0 {
+		page = 1
+	}
+	if perPage > 100 {
+		perPage = 100
+	}
+
+	var items []T
 	var total int64
 
-	offset := (page - 1) * limit
+	// Count total records matching the query (before pagination)
+	// Use Session to clone the query without affecting the original
+	countQuery := query.Session(&gorm.Session{})
+	if err := countQuery.Count(&total).Error; err != nil {
+		return nil, err
+	}
 
-	err := db.Count(&total).
-		Offset(offset).
-		Limit(limit).
-		Find(&items).Error
+	// Apply pagination to the query
+	offset := (page - 1) * perPage
+	err := query.Offset(offset).Limit(perPage).Find(&items).Error
 
 	if err != nil {
 		return nil, err
 	}
 
-	lastPage := int(math.Ceil(float64(total) / float64(limit)))
+	// Calculate pagination metadata
+	lastPage := int(math.Ceil(float64(total) / float64(perPage)))
 	if lastPage == 0 {
 		lastPage = 1
 	}
@@ -129,10 +156,10 @@ func (r *Repository[Model, CrDTO, UpDTO, ResSingle]) Paginate(db *gorm.DB, page,
 	from := offset + 1
 	to := offset + len(items)
 
-	result := &PaginatedResponse[Model]{
+	result := &PaginatedResponse[T]{
 		Data:            items,
 		Total:           total,
-		PerPage:         limit,
+		PerPage:         perPage,
 		CurrentPage:     page,
 		LastPage:        lastPage,
 		From:            from,
@@ -143,4 +170,9 @@ func (r *Repository[Model, CrDTO, UpDTO, ResSingle]) Paginate(db *gorm.DB, page,
 	}
 
 	return result, nil
+}
+
+// Paginate is a convenience method for repositories that works with Model types
+func (r *Repository[Model, CrDTO, UpDTO, ResSingle]) Paginate(db *gorm.DB, page int, limit ...int) (*PaginatedResponse[Model], error) {
+	return Paginate[Model](db, page, limit...)
 }
