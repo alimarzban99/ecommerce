@@ -19,7 +19,7 @@ func main() {
 	if err := database.Init(); err != nil {
 		log.Fatal(err)
 	}
-	defer cache.Close()
+	defer database.Close()
 
 	if err := cache.Init(); err != nil {
 		log.Fatal(err)
@@ -51,6 +51,7 @@ func main() {
 	routers.CategoryRouter(apiV1)
 	routers.ProductRouter(apiV1)
 	routers.OrderRouter(apiV1)
+	routers.CartRouter(apiV1)
 
 	runPort := fmt.Sprintf(":%d", config.Cfg.Server.Port)
 	log.Printf("Server is running at http://localhost%s\n", runPort)
