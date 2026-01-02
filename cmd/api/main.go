@@ -49,8 +49,8 @@ func main() {
 	routers.AuthRouter(apiV1)
 	routers.UserRouter(apiV1)
 	routers.CategoryRouter(apiV1)
-	//routers.ProductRouter(apiV1)
-	//routers.OrderRouter(apiV1)
+	routers.ProductRouter(apiV1)
+	routers.OrderRouter(apiV1)
 
 	runPort := fmt.Sprintf(":%d", config.Cfg.Server.Port)
 	log.Printf("Server is running at http://localhost%s\n", runPort)

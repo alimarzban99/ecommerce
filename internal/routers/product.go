@@ -7,11 +7,10 @@ import (
 
 func ProductRouter(r *gin.RouterGroup) {
 
-	clientRouter := r.Group("client")
 	{
-		productRouter := clientRouter.Group("product")
+		productRouter := r.Group("product")
 		productHandler := client.NewProductHandler()
 		productRouter.GET("", productHandler.Index)
-		productRouter.PUT(":slug", productHandler.Show)
+		productRouter.GET(":slug", productHandler.Show)
 	}
 }

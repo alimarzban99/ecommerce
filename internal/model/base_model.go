@@ -30,7 +30,7 @@ func Starter() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	err = db.AutoMigrate(&User{}, &VerificationCode{}, &Token{}, &Post{}, &Category{})
+	err = db.AutoMigrate(&User{}, &VerificationCode{}, &Token{}, &Product{}, &Category{}, &Order{})
 	if err != nil {
 		fmt.Println(err)
 	}

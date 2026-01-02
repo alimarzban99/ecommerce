@@ -13,7 +13,6 @@ type User struct {
 	Mobile    string         `gorm:"type:varchar(20);unique;not null"`
 	IsAdmin   bool           `gorm:"type:boolean;not null;default:false"`
 	Email     *string        `gorm:"type:varchar(100);unique"`
-	Posts     *[]Post
 }
 
 func ActiveUser(db *gorm.DB) *gorm.DB {
