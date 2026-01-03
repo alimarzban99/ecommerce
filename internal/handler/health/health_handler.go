@@ -30,7 +30,7 @@ type ServiceStatus struct {
 func (h *Handler) Health(c *gin.Context) {
 	status := Status{
 		Status:    "healthy",
-		Timestamp: time.Now().UTC().Format(time.RFC3339),
+		Timestamp: time.Now().Format(time.DateTime),
 		Services:  make(map[string]ServiceStatus),
 	}
 
