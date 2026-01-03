@@ -30,9 +30,9 @@ func (r *TokenRepository) FindToken(jti string) (bool, error) {
 	return exists, err
 }
 
-func (r *TokenRepository) ExpiredToken(jti string) {
-	r.database.
+func (r *TokenRepository) ExpiredToken(jti string) error {
+	return r.database.
 		Model(&model.Token{}).
 		Where("id = ?", jti).
-		Update("revoked", true)
+		Update("revoked", true).Error
 }

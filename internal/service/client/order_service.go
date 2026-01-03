@@ -7,11 +7,18 @@ import (
 )
 
 type OrderService struct {
-	repo *repository.OrderRepository
+	repo repository.OrderRepositoryInterface
 }
 
+// NewOrderService creates a new order service (kept for backward compatibility)
 func NewOrderService() *OrderService {
-	return &OrderService{repo: repository.NewOrderRepository()}
+	// This should not be used in production - use NewOrderServiceWithDeps instead
+	panic("NewOrderService() is deprecated. Use NewOrderServiceWithDeps() with dependency injection")
+}
+
+// NewOrderServiceWithDeps creates a new order service with injected dependencies
+func NewOrderServiceWithDeps(repo repository.OrderRepositoryInterface) *OrderService {
+	return &OrderService{repo: repo}
 }
 
 func (s *OrderService) List(filter dtoClient.ListOrderDTO) (*repository.PaginatedResponse[client.OrderResource], error) {

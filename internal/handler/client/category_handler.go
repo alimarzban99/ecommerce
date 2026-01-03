@@ -1,17 +1,17 @@
 package client
 
 import (
-	"github.com/alimarzban99/ecommerce/internal/service/client"
+	"github.com/alimarzban99/ecommerce/internal/service"
 	"github.com/alimarzban99/ecommerce/pkg/response"
 	"github.com/gin-gonic/gin"
 )
 
 type CategoryHandler struct {
-	service *client.CategoryService
+	service service.CategoryServiceInterface
 }
 
-func NewCategoryHandler() *CategoryHandler {
-	return &CategoryHandler{service: client.NewCategoryService()}
+func NewCategoryHandler(service service.CategoryServiceInterface) *CategoryHandler {
+	return &CategoryHandler{service: service}
 }
 
 func (h *CategoryHandler) Index(ctx *gin.Context) {

@@ -2,18 +2,18 @@ package client
 
 import (
 	dtoClient "github.com/alimarzban99/ecommerce/internal/dto/client"
-	"github.com/alimarzban99/ecommerce/internal/service/client"
+	"github.com/alimarzban99/ecommerce/internal/service"
 	"github.com/alimarzban99/ecommerce/pkg/response"
 	"github.com/alimarzban99/ecommerce/pkg/validation"
 	"github.com/gin-gonic/gin"
 )
 
 type ProductHandler struct {
-	service *client.ProductService
+	service service.ProductServiceInterface
 }
 
-func NewProductHandler() *ProductHandler {
-	return &ProductHandler{service: client.NewProductService()}
+func NewProductHandler(service service.ProductServiceInterface) *ProductHandler {
+	return &ProductHandler{service: service}
 }
 
 func (h *ProductHandler) FilterList(c *gin.Context) {}

@@ -2,7 +2,7 @@ package auth
 
 import (
 	authdto "github.com/alimarzban99/ecommerce/internal/dto/auth"
-	"github.com/alimarzban99/ecommerce/internal/service/auth"
+	"github.com/alimarzban99/ecommerce/internal/service"
 
 	"github.com/alimarzban99/ecommerce/pkg/response"
 	"github.com/alimarzban99/ecommerce/pkg/validation"
@@ -10,11 +10,11 @@ import (
 )
 
 type Handler struct {
-	service *auth.Service
+	service service.AuthServiceInterface
 }
 
-func NewAuthHandler() *Handler {
-	return &Handler{service: auth.NewAuthService()}
+func NewAuthHandler(service service.AuthServiceInterface) *Handler {
+	return &Handler{service: service}
 }
 
 func (h *Handler) GetVerificationCode(ctx *gin.Context) {
@@ -25,7 +25,11 @@ func (h *Handler) GetVerificationCode(ctx *gin.Context) {
 		response.ValidationErrorsResponse(ctx, validationErrors)
 		return
 	}
-	h.service.GetVerificationCode(dto)
+	err = h.service.GetVerificationCode(dto)
+	if err != nil {
+		response.ErrorResponse(ctx, err.Error())
+		return
+	}
 	response.SuccessResponse(ctx, "Code sent")
 }
 
@@ -50,7 +54,20 @@ func (h *Handler) Verify(ctx *gin.Context) {
 }
 
 func (h *Handler) Logout(ctx *gin.Context) {
-	jti := ctx.MustGet("jti").(string)
-	h.service.Logout(jti)
+	jtiValue, exists := ctx.Get("jti")
+	if !exists {
+		response.AuthenticationErrorResponse(ctx, "Token ID not found")
+		return
+	}
+	jti, ok := jtiValue.(string)
+	if !ok {
+		response.ErrorResponse(ctx, "Invalid token ID type")
+		return
+	}
+	err := h.service.Logout(jti)
+	if err != nil {
+		response.ErrorResponse(ctx, err.Error())
+		return
+	}
 	response.SuccessResponse(ctx, "Logged out")
 }

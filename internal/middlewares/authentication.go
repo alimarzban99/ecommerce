@@ -7,34 +7,22 @@ import (
 	"github.com/alimarzban99/ecommerce/pkg/response"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"log"
-	"os"
 	"strings"
 )
 
-var publicKey *rsa.PublicKey
-
-func loadPublicKey() {
-	keyData, err := os.ReadFile("keys/public.pem")
-	if err != nil {
-		log.Fatalf("Failed to read public key: %v", err)
-	}
-
-	key, err := jwt.ParseRSAPublicKeyFromPEM(keyData)
-	if err != nil {
-		log.Fatalf("Failed to parse public key: %v", err)
-	}
-
-	publicKey = key
-}
-
-func Authentication(kind string) gin.HandlerFunc {
-
-	loadPublicKey()
+// Authentication creates a middleware that validates JWT tokens
+// It accepts publicKey, tokenRepo, and userRepo as dependencies
+func Authentication(
+	publicKey *rsa.PublicKey,
+	tokenRepo repository.TokenRepositoryInterface,
+	userRepo repository.UserRepositoryInterface,
+	kind string,
+) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		authHeader := ctx.GetHeader("Authorization")
 		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") || len(authHeader) < 8 {
 			response.AuthenticationErrorResponse(ctx, "Authentication required")
+			ctx.Abort()
 			return
 		}
 
@@ -48,31 +36,70 @@ func Authentication(kind string) gin.HandlerFunc {
 
 		if err != nil || !token.Valid {
 			response.AuthenticationErrorResponse(ctx, "Unauthorized")
+			ctx.Abort()
 			return
 		}
 
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
 			response.AuthenticationErrorResponse(ctx, "invalid token")
+			ctx.Abort()
 			return
 		}
 
-		jti := claims["jti"].(string)
+		// Safe type assertion for jti
+		jtiValue, ok := claims["jti"]
+		if !ok {
+			response.AuthenticationErrorResponse(ctx, "invalid token: missing jti")
+			ctx.Abort()
+			return
+		}
+		jti, ok := jtiValue.(string)
+		if !ok {
+			response.AuthenticationErrorResponse(ctx, "invalid token: invalid jti type")
+			ctx.Abort()
+			return
+		}
 
-		repo := repository.NewTokenRepository()
-		tokenExists, err := repo.FindToken(jti)
+		// Verify token exists and is not revoked
+		tokenExists, err := tokenRepo.FindToken(jti)
 		if err != nil || !tokenExists {
 			response.AuthenticationErrorResponse(ctx, "invalid token")
+			ctx.Abort()
 			return
 		}
 
-		userID := int(claims["sub"].(float64))
-		userRepo := repository.NewUserRepository()
+		// Safe type assertion for user ID
+		subValue, ok := claims["sub"]
+		if !ok {
+			response.AuthenticationErrorResponse(ctx, "invalid token: missing sub")
+			ctx.Abort()
+			return
+		}
+
+		var userID int
+		switch v := subValue.(type) {
+		case float64:
+			userID = int(v)
+		case int:
+			userID = v
+		case int64:
+			userID = int(v)
+		default:
+			response.AuthenticationErrorResponse(ctx, "invalid token: invalid sub type")
+			ctx.Abort()
+			return
+		}
+
 		user, err := userRepo.FindOne(userID)
+		if err != nil {
+			response.AuthenticationErrorResponse(ctx, "user not found")
+			ctx.Abort()
+			return
+		}
 
 		ctx.Set("user", user)
 		ctx.Set("jti", jti)
 		ctx.Next()
-
 	}
 }

@@ -10,36 +10,51 @@ import (
 	"github.com/alimarzban99/ecommerce/internal/resources/client"
 	"github.com/golang-jwt/jwt/v5"
 	"math/rand"
-	"os"
 	"time"
 )
 
 type Service struct {
-	repo      *repository.VerificationCodeRepository
-	tokenRepo *repository.TokenRepository
-	userRepo  *repository.UserRepository
+	repo       repository.VerificationCodeRepositoryInterface
+	tokenRepo  repository.TokenRepositoryInterface
+	userRepo   repository.UserRepositoryInterface
+	privateKey *rsa.PrivateKey
 }
 
-var privateKey *rsa.PrivateKey
-
+// NewAuthService creates a new auth service (kept for backward compatibility)
 func NewAuthService() *Service {
-	loadPrivateKey()
+	// This should not be used in production - use NewAuthServiceWithDeps instead
+	panic("NewAuthService() is deprecated. Use NewAuthServiceWithDeps() with dependency injection")
+}
+
+// NewAuthServiceWithDeps creates a new auth service with injected dependencies
+func NewAuthServiceWithDeps(
+	repo repository.VerificationCodeRepositoryInterface,
+	tokenRepo repository.TokenRepositoryInterface,
+	userRepo repository.UserRepositoryInterface,
+	privateKey *rsa.PrivateKey,
+) *Service {
 	return &Service{
-		repo:      repository.NewVerificationCodeRepository(),
-		userRepo:  repository.NewUserRepository(),
-		tokenRepo: repository.NewTokenRepository(),
+		repo:       repo,
+		tokenRepo:  tokenRepo,
+		userRepo:   userRepo,
+		privateKey: privateKey,
 	}
 }
 
-func (s *Service) GetVerificationCode(dto *auth.GetOTPCodeDTO) {
+func (s *Service) GetVerificationCode(dto *auth.GetOTPCodeDTO) error {
 	expireTime := config.Cfg.OTPCode.ExpireTime
 
-	_, _ = s.repo.Create(&auth.CreateOTPCodeDTO{
+	_, err := s.repo.Create(&auth.CreateOTPCodeDTO{
 		Code:     s.generateOTPCode(),
 		Mobile:   dto.Mobile,
 		ExpireAt: time.Now().Add(expireTime),
 	})
 
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *Service) Verify(dto *auth.VerifyOTPCodeDTO) (string, error) {
@@ -69,18 +84,25 @@ func (s *Service) Verify(dto *auth.VerifyOTPCodeDTO) (string, error) {
 		return "", err
 	}
 
+	// Get the ID from TokenResponse
+	tokenID := tokenData.ID.String()
+
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
 		"sub": user.ID,
 		"exp": expiration.Unix(),
-		"jti": tokenData.ID,
+		"jti": tokenID,
 	})
 
-	tokenStr, _ := token.SignedString(privateKey)
+	tokenStr, err := token.SignedString(s.privateKey)
+	if err != nil {
+		return "", errors.New("failed to sign token: " + err.Error())
+	}
+
 	return tokenStr, nil
 }
 
-func (s *Service) Logout(jti string) {
-	s.tokenRepo.ExpiredToken(jti)
+func (s *Service) Logout(jti string) error {
+	return s.tokenRepo.ExpiredToken(jti)
 }
 
 func (s *Service) generateOTPCode() int {
@@ -107,18 +129,4 @@ func (s *Service) checkOTPCode(dto *auth.VerifyOTPCodeDTO) bool {
 	}
 
 	return true
-}
-
-func loadPrivateKey() {
-	keyData, err := os.ReadFile("keys/private.pem")
-	if err != nil {
-		panic("Could not read private key: " + err.Error())
-	}
-
-	key, err := jwt.ParseRSAPrivateKeyFromPEM(keyData)
-	if err != nil {
-		panic("Could not parse private key: " + err.Error())
-	}
-
-	privateKey = key
 }

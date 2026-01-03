@@ -7,22 +7,29 @@ import (
 )
 
 type UserService struct {
-	repo *repository.UserRepository
+	repo repository.UserRepositoryInterface
 }
 
+// NewUserService creates a new user service (kept for backward compatibility)
 func NewUserService() *UserService {
-	return &UserService{repo: repository.NewUserRepository()}
+	// This should not be used in production - use NewUserServiceWithDeps instead
+	panic("NewUserService() is deprecated. Use NewUserServiceWithDeps() with dependency injection")
 }
 
-func (s UserService) Profile(id int) (*client.UserResource, error) {
+// NewUserServiceWithDeps creates a new user service with injected dependencies
+func NewUserServiceWithDeps(repo repository.UserRepositoryInterface) *UserService {
+	return &UserService{repo: repo}
+}
+
+func (s *UserService) Profile(id int) (*client.UserResource, error) {
 	return s.repo.FindOne(id)
 }
 
-func (s UserService) Update(id int, dto *dtoAdmin.UpdateUserDTO) error {
+func (s *UserService) Update(id int, dto *dtoAdmin.UpdateUserDTO) error {
 	return s.repo.Update(id, dto)
 }
 
-func (s UserService) UpdateProfile(id int, dto *dtoAdmin.UpdateProfileDTO) (*client.UserResource, error) {
+func (s *UserService) UpdateProfile(id int, dto *dtoAdmin.UpdateProfileDTO) (*client.UserResource, error) {
 	// Convert UpdateProfileDTO to map for partial update
 	updateMap := make(map[string]interface{})
 	if dto.FirstName != nil {

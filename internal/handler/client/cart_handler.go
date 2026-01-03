@@ -3,7 +3,7 @@ package client
 import (
 	dtoClient "github.com/alimarzban99/ecommerce/internal/dto/client"
 	resourceClient "github.com/alimarzban99/ecommerce/internal/resources/client"
-	serviceClient "github.com/alimarzban99/ecommerce/internal/service/client"
+	"github.com/alimarzban99/ecommerce/internal/service"
 	"github.com/alimarzban99/ecommerce/pkg/response"
 	"github.com/alimarzban99/ecommerce/pkg/validation"
 
@@ -11,11 +11,11 @@ import (
 )
 
 type CartHandler struct {
-	service *serviceClient.CartService
+	service service.CartServiceInterface
 }
 
-func NewCartHandler() *CartHandler {
-	return &CartHandler{service: serviceClient.NewCartService()}
+func NewCartHandler(service service.CartServiceInterface) *CartHandler {
+	return &CartHandler{service: service}
 }
 
 // Add adds a product to the cart

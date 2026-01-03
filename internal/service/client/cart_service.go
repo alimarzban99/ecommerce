@@ -17,8 +17,8 @@ import (
 )
 
 type CartService struct {
-	productRepo *repository.ProductRepository
-	orderRepo   *repository.OrderRepository
+	productRepo repository.ProductRepositoryInterface
+	orderRepo   repository.OrderRepositoryInterface
 }
 
 type CartItem struct {
@@ -28,10 +28,20 @@ type CartItem struct {
 
 type Cart []CartItem
 
+// NewCartService creates a new cart service (kept for backward compatibility)
 func NewCartService() *CartService {
+	// This should not be used in production - use NewCartServiceWithDeps instead
+	panic("NewCartService() is deprecated. Use NewCartServiceWithDeps() with dependency injection")
+}
+
+// NewCartServiceWithDeps creates a new cart service with injected dependencies
+func NewCartServiceWithDeps(
+	productRepo repository.ProductRepositoryInterface,
+	orderRepo repository.OrderRepositoryInterface,
+) *CartService {
 	return &CartService{
-		productRepo: repository.NewProductRepository(),
-		orderRepo:   repository.NewOrderRepository(),
+		productRepo: productRepo,
+		orderRepo:   orderRepo,
 	}
 }
 

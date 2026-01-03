@@ -3,18 +3,18 @@ package client
 import (
 	dtoClient "github.com/alimarzban99/ecommerce/internal/dto/client"
 	resourceClient "github.com/alimarzban99/ecommerce/internal/resources/client"
-	"github.com/alimarzban99/ecommerce/internal/service/client"
+	"github.com/alimarzban99/ecommerce/internal/service"
 	"github.com/alimarzban99/ecommerce/pkg/response"
 	"github.com/alimarzban99/ecommerce/pkg/validation"
 	"github.com/gin-gonic/gin"
 )
 
 type UserHandler struct {
-	service *client.UserService
+	service service.UserServiceInterface
 }
 
-func NewUserHandler() *UserHandler {
-	return &UserHandler{service: client.NewUserService()}
+func NewUserHandler(service service.UserServiceInterface) *UserHandler {
+	return &UserHandler{service: service}
 }
 
 func (h *UserHandler) Profile(c *gin.Context) {

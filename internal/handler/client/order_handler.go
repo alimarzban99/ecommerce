@@ -2,18 +2,18 @@ package client
 
 import (
 	dtoClient "github.com/alimarzban99/ecommerce/internal/dto/client"
-	"github.com/alimarzban99/ecommerce/internal/service/client"
+	"github.com/alimarzban99/ecommerce/internal/service"
 	"github.com/alimarzban99/ecommerce/pkg/response"
 	"github.com/alimarzban99/ecommerce/pkg/validation"
 	"github.com/gin-gonic/gin"
 )
 
 type OrderHandler struct {
-	service *client.OrderService
+	service service.OrderServiceInterface
 }
 
-func NewOrderHandler() *OrderHandler {
-	return &OrderHandler{service: client.NewOrderService()}
+func NewOrderHandler(service service.OrderServiceInterface) *OrderHandler {
+	return &OrderHandler{service: service}
 }
 
 func (h *OrderHandler) Index(ctx *gin.Context) {
