@@ -111,7 +111,7 @@ func (r *Repository[Model, CrDTO, UpDTO, ResSingle]) OrderBY(query *gorm.DB, sor
 //
 // Example:
 //
-//	query := db.Model(&Product{}).Where("status = ?", "active")
+//	query := database.Model(&Product{}).Where("status = ?", "active")
 //	result, err := Paginate[Product](query, 1)        // page 1, 10 per page
 //	result, err := Paginate[Product](query, 1, 20)    // page 1, 20 per page
 func Paginate[T any](query *gorm.DB, page int, limit ...int) (*PaginatedResponse[T], error) {

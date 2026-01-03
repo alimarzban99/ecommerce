@@ -2,6 +2,7 @@ package repository
 
 import (
 	dtoClient "github.com/alimarzban99/ecommerce/internal/dto/client"
+	"github.com/alimarzban99/ecommerce/internal/enums"
 	"github.com/alimarzban99/ecommerce/internal/model"
 	"github.com/alimarzban99/ecommerce/internal/resources/client"
 	"github.com/alimarzban99/ecommerce/pkg/database"
@@ -25,7 +26,7 @@ func (r *CategoryRepository) CategoriesList() ([]client.CategoryPluckResource, e
 	err := r.database.
 		Model(&model.Category{}).
 		Select("id, title").
-		Where("status = ?", "active").
+		Where("status = ?", enums.Active).
 		Scan(&categories).Error
 
 	if err != nil {

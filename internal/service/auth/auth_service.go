@@ -3,6 +3,7 @@ package auth
 import (
 	"crypto/rsa"
 	"errors"
+	"fmt"
 	"github.com/alimarzban99/ecommerce/config"
 	"github.com/alimarzban99/ecommerce/internal/dto/auth"
 	client2 "github.com/alimarzban99/ecommerce/internal/dto/client"
@@ -10,6 +11,7 @@ import (
 	"github.com/alimarzban99/ecommerce/internal/resources/client"
 	"github.com/golang-jwt/jwt/v5"
 	"math/rand"
+	"strconv"
 	"time"
 )
 
@@ -78,6 +80,7 @@ func (s *Service) Verify(dto *auth.VerifyOTPCodeDTO) (string, error) {
 	}
 
 	expiration := time.Now().Add(time.Hour * 24)
+	fmt.Println(expiration)
 	tokenData, err := s.tokenRepo.Create(&auth.TokenCreate{UserID: uint(user.ID), ExpiresAt: expiration, Revoked: false})
 
 	if err != nil {
@@ -105,10 +108,11 @@ func (s *Service) Logout(jti string) error {
 	return s.tokenRepo.ExpiredToken(jti)
 }
 
-func (s *Service) generateOTPCode() int {
+func (s *Service) generateOTPCode() string {
 	src := rand.NewSource(time.Now().UnixNano())
 	r := rand.New(src)
-	return int(uint(r.Intn(9000) + 1000))
+	otp := r.Intn(9000) + 1000
+	return strconv.Itoa(otp)
 }
 
 func (s *Service) existsByMobile(mobile string) bool {

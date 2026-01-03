@@ -5,7 +5,6 @@ import (
 	"github.com/alimarzban99/ecommerce/config"
 	"github.com/alimarzban99/ecommerce/internal/container"
 	"github.com/alimarzban99/ecommerce/internal/middlewares"
-	"github.com/alimarzban99/ecommerce/internal/model"
 	"github.com/alimarzban99/ecommerce/internal/routers"
 	"github.com/alimarzban99/ecommerce/pkg/cache"
 	"github.com/alimarzban99/ecommerce/pkg/database"
@@ -33,8 +32,6 @@ func main() {
 		log.Fatal(err)
 	}
 	defer zapLogger.Sync()
-
-	model.Starter()
 
 	// Load JWT keys once at startup
 	privateKey, publicKey, err := jwt.LoadKeys("keys/private.pem", "keys/public.pem")

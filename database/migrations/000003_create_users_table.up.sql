@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    mobile VARCHAR(20) UNIQUE NOT NULL,
+    is_admin BOOLEAN NOT NULL DEFAULT FALSE,
+    email VARCHAR(100) UNIQUE,
+    status status DEFAULT 'active',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP WITH TIME ZONE
+ );
+
+CREATE INDEX idx_users_status ON users (status);

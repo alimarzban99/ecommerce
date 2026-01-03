@@ -55,7 +55,7 @@ openssl rsa -in keys/private.pem -pubout -out keys/public.pem
 1. **Start PostgreSQL and Redis** (using Docker Compose):
 
 ```bash
-docker-compose up -d db redis
+docker-compose up -d database redis
 ```
 
 2. **Run the application**:

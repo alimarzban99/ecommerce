@@ -1,5 +1,9 @@
 package model
 
+import (
+	"github.com/alimarzban99/ecommerce/internal/enums"
+)
+
 type Product struct {
 	BaseModel
 	CategoryID  uint      `gorm:"not null;index" json:"category_id" binding:"required"`
@@ -15,7 +19,7 @@ type Product struct {
 
 // IsInStock checks if product has available stock
 func (p *Product) IsInStock() bool {
-	return p.Stock > 0 && p.Status == "active"
+	return p.Stock > 0 && p.Status == enums.Active
 }
 
 // CanPurchase checks if product can be purchased

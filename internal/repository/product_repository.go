@@ -2,6 +2,7 @@ package repository
 
 import (
 	dtoClient "github.com/alimarzban99/ecommerce/internal/dto/client"
+	"github.com/alimarzban99/ecommerce/internal/enums"
 	"github.com/alimarzban99/ecommerce/internal/model"
 	"github.com/alimarzban99/ecommerce/internal/resources/client"
 	"github.com/alimarzban99/ecommerce/pkg/database"
@@ -39,7 +40,7 @@ func (r *ProductRepository) List(filter dtoClient.ListProductDTO) (*PaginatedRes
 	}
 
 	// Filter only active products
-	query = query.Where("status = ?", "active")
+	query = query.Where("status = ?", enums.Active)
 
 	// Sort by newest first (created_at DESC)
 	query = query.Order("created_at DESC")
@@ -59,7 +60,7 @@ func (r *ProductRepository) List(filter dtoClient.ListProductDTO) (*PaginatedRes
 			Slug:        product.Slug,
 			Image:       product.Image,
 			Description: product.Description,
-			Status:      product.Status,
+			Status:      string(product.Status),
 			CreatedAt:   product.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 		}
 
@@ -93,7 +94,7 @@ func (r *ProductRepository) FindBySlug(slug string) (*client.ProductResource, er
 
 	err := r.database.
 		Preload("Category").
-		Where("slug = ? AND status = ?", slug, "active").
+		Where("slug = ? AND status = ?", slug, enums.Active).
 		First(&product).Error
 
 	if err != nil {
@@ -106,7 +107,7 @@ func (r *ProductRepository) FindBySlug(slug string) (*client.ProductResource, er
 		Slug:        product.Slug,
 		Image:       product.Image,
 		Description: product.Description,
-		Status:      product.Status,
+		Status:      string(product.Status),
 		CreatedAt:   product.CreatedAt.Format("2006-01-01T15:04:05"),
 	}
 
@@ -125,7 +126,7 @@ func (r *ProductRepository) FindByID(id uint) (*model.Product, error) {
 
 	err := r.database.
 		Preload("Category").
-		Where("id = ? AND status = ?", id, "active").
+		Where("id = ? AND status = ?", id, enums.Active).
 		First(&product).Error
 
 	if err != nil {
