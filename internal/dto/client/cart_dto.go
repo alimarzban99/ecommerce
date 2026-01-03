@@ -4,16 +4,16 @@ type CartAddDTO struct {
 	ProductId uint `json:"product_id" binding:"required"`
 }
 
+type CartUpdateQuantityDTO struct {
+	ProductId uint `json:"product_id" binding:"required"`
+	Quantity  int  `json:"quantity" binding:"required,min=1"`
+}
+
 type CartRemoveDTO struct {
-	Search   string // Search by product name/title
-	Category uint   // Filter by category ID
-	Page     int    // Page number (default: 1)
-	Limit    int    // Items per page (default: 10, max: 100)
+	ProductId uint `json:"product_id" binding:"required"`
 }
 
 type CartFinalizeDTO struct {
-	Search   string // Search by product name/title
-	Category uint   // Filter by category ID
-	Page     int    // Page number (default: 1)
-	Limit    int    // Items per page (default: 10, max: 100)
+	PaymentMethod string  `json:"payment_method" binding:"required,oneof=gateway wallet"`
+	DiscountCode  *string `json:"discount_code,omitempty"`
 }

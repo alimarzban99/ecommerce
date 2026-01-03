@@ -119,3 +119,18 @@ func (r *ProductRepository) FindBySlug(slug string) (*client.ProductResource, er
 
 	return res, nil
 }
+
+func (r *ProductRepository) FindByID(id uint) (*model.Product, error) {
+	var product model.Product
+
+	err := r.database.
+		Preload("Category").
+		Where("id = ? AND status = ?", id, "active").
+		First(&product).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &product, nil
+}
