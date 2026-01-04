@@ -2,6 +2,7 @@ package model
 
 type UserAddress struct {
 	BaseModel
+	UserID  int     `gorm:"not null"`
 	Name    string  `gorm:"not null"`
 	City    string  `gorm:"not null"`
 	Address string  `gorm:"not null"`

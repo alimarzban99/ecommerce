@@ -20,5 +20,22 @@ func UserRouter(r *gin.RouterGroup, c *container.Container) {
 		userHandler := client.NewUserHandler(c.UserService)
 		userRouter.GET("profile", userHandler.Profile)
 		userRouter.PUT("", userHandler.Update)
+
+	}
+
+	{
+		userAddressRouter := clientRouter.Group("address").
+			Use(middlewares.Authentication(
+				c.PublicKey,
+				c.TokenRepository,
+				c.UserRepository,
+				"client",
+			))
+		userAddressHandler := client.NewUserAddressHandler(c.UserAddressService)
+		userAddressRouter.GET("", userAddressHandler.Index)
+		userAddressRouter.GET(":id", userAddressHandler.Show)
+		userAddressRouter.POST("", userAddressHandler.Store)
+		userAddressRouter.PUT(":id", userAddressHandler.Update)
+		userAddressRouter.DELETE(":id", userAddressHandler.Destroy)
 	}
 }

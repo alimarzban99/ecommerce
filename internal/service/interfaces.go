@@ -22,6 +22,14 @@ type UserServiceInterface interface {
 	UpdateProfile(id int, dto *dtoClient.UpdateProfileDTO) (*client.UserResource, error)
 }
 
+type UserAddressServiceInterface interface {
+	Index(dto dtoClient.ListUserAddressDTO, userId int) (*repository.PaginatedResponse[client.UserAddressListResource], error)
+	Show(id, userId int) (*client.UserAddressResource, error)
+	Store(dto *dtoClient.StoreUserAddressDTO, userId int) (*client.UserAddressResource, error)
+	Update(id, userId int, dto *dtoClient.UpdateUserAddressDTO) error
+	Destroy(id, userId int) error
+}
+
 // ProductServiceInterface defines the interface for product service operations
 type ProductServiceInterface interface {
 	List(filter dtoClient.ListProductDTO) (*repository.PaginatedResponse[client.ProductResource], error)

@@ -19,6 +19,14 @@ type UserRepositoryInterface interface {
 	UpdateProfile(id int, updateMap map[string]interface{}) error
 }
 
+type UserAddressRepositoryInterface interface {
+	List(dto dtoClient.ListUserAddressDTO, userId int) (*PaginatedResponse[client.UserAddressListResource], error)
+	FindOne(id, userId int) (*client.UserAddressResource, error)
+	Create(dto *dtoClient.StoreUserAddressDTO, userId int) (*client.UserAddressResource, error)
+	Update(id, userId int, dto *dtoClient.UpdateUserAddressDTO) error
+	Destroy(id, userId int) error
+}
+
 // TokenRepositoryInterface defines the interface for token repository operations
 type TokenRepositoryInterface interface {
 	Create(dto *authdto.TokenCreate) (*authResources.TokenResponse, error)

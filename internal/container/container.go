@@ -20,6 +20,7 @@ type Container struct {
 
 	// Repositories
 	UserRepository             repository.UserRepositoryInterface
+	UserAddressRepository      repository.UserAddressRepositoryInterface
 	TokenRepository            repository.TokenRepositoryInterface
 	VerificationCodeRepository repository.VerificationCodeRepositoryInterface
 	ProductRepository          repository.ProductRepositoryInterface
@@ -27,18 +28,20 @@ type Container struct {
 	OrderRepository            repository.OrderRepositoryInterface
 
 	// Services
-	AuthService     service.AuthServiceInterface
-	UserService     service.UserServiceInterface
-	ProductService  service.ProductServiceInterface
-	CategoryService service.CategoryServiceInterface
-	OrderService    service.OrderServiceInterface
-	CartService     service.CartServiceInterface
+	AuthService        service.AuthServiceInterface
+	UserService        service.UserServiceInterface
+	UserAddressService service.UserAddressServiceInterface
+	ProductService     service.ProductServiceInterface
+	CategoryService    service.CategoryServiceInterface
+	OrderService       service.OrderServiceInterface
+	CartService        service.CartServiceInterface
 }
 
 // NewContainer creates a new dependency injection container
 func NewContainer(db *gorm.DB, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey) *Container {
 	// Initialize repositories
 	userRepo := repository.NewUserRepository()
+	userAddressRepo := repository.NewUserAddressRepository()
 	tokenRepo := repository.NewTokenRepository()
 	verificationCodeRepo := repository.NewVerificationCodeRepository()
 	productRepo := repository.NewProductRepository()
@@ -53,6 +56,7 @@ func NewContainer(db *gorm.DB, privateKey *rsa.PrivateKey, publicKey *rsa.Public
 		privateKey,
 	)
 	userService := serviceClient.NewUserServiceWithDeps(userRepo)
+	userAddressService := serviceClient.NewUserAddressService(userAddressRepo)
 	productService := serviceClient.NewProductServiceWithDeps(productRepo)
 	categoryService := serviceClient.NewCategoryServiceWithDeps(categoryRepo)
 	orderService := serviceClient.NewOrderServiceWithDeps(orderRepo)
@@ -70,6 +74,7 @@ func NewContainer(db *gorm.DB, privateKey *rsa.PrivateKey, publicKey *rsa.Public
 		OrderRepository:            orderRepo,
 		AuthService:                authService,
 		UserService:                userService,
+		UserAddressService:         userAddressService,
 		ProductService:             productService,
 		CategoryService:            categoryService,
 		OrderService:               orderService,

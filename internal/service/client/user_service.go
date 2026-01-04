@@ -10,12 +10,6 @@ type UserService struct {
 	repo repository.UserRepositoryInterface
 }
 
-// NewUserService creates a new user service (kept for backward compatibility)
-func NewUserService() *UserService {
-	// This should not be used in production - use NewUserServiceWithDeps instead
-	panic("NewUserService() is deprecated. Use NewUserServiceWithDeps() with dependency injection")
-}
-
 // NewUserServiceWithDeps creates a new user service with injected dependencies
 func NewUserServiceWithDeps(repo repository.UserRepositoryInterface) *UserService {
 	return &UserService{repo: repo}
