@@ -60,11 +60,21 @@ type CategoryRepositoryInterface interface {
 	CategoriesList() ([]client.CategoryPluckResource, error)
 }
 
-// OrderRepositoryInterface defines the interface for order repository operations
 type OrderRepositoryInterface interface {
 	FindOne(id int) (*client.OrderResource, error)
 	Create(dto *dtoClient.StoreUserDTO) (*client.OrderResource, error)
 	Update(id int, dto *dtoClient.UpdateUserDTO) error
 	Destroy(id int) error
 	List(filter dtoClient.ListOrderDTO) (*PaginatedResponse[client.OrderResource], error)
+	CountDiscountCodeUsed(code string, userId int) (*int, error)
+}
+
+type TransactionRepositoryInterface interface {
+	List(dto dtoClient.ListTransactionDTO, userId int) (*PaginatedResponse[client.TransactionListResource], error)
+	Balance(userId int) (float64, error)
+	Create(dto *dtoClient.StoreTransactionDTO) error
+}
+
+type DiscountRepositoryInterface interface {
+	GetCode(code string) (*model.DiscountCode, error)
 }

@@ -41,16 +41,27 @@ type CategoryServiceInterface interface {
 	CategoriesList() ([]client.CategoryPluckResource, error)
 }
 
-// OrderServiceInterface defines the interface for order service operations
 type OrderServiceInterface interface {
 	List(filter dtoClient.ListOrderDTO) (*repository.PaginatedResponse[client.OrderResource], error)
 }
 
-// CartServiceInterface defines the interface for cart service operations
+type TransactionServiceInterface interface {
+	List(dto dtoClient.ListTransactionDTO, userId int) (*repository.PaginatedResponse[client.TransactionListResource], error)
+}
+
+type WalletServiceInterface interface {
+	Balance(userId int) (float64, error)
+	Deposit(dto dtoClient.DepositWalletDTO, userId int) (float64, error)
+}
+
 type CartServiceInterface interface {
 	Add(ctx context.Context, userID uint, data dtoClient.CartAddDTO) error
 	Remove(ctx context.Context, userID uint, data dtoClient.CartRemoveDTO) error
 	UpdateQuantity(ctx context.Context, userID uint, data dtoClient.CartUpdateQuantityDTO) error
 	Get(ctx context.Context, userID uint) (*client.CartResource, error)
 	Finalize(ctx context.Context, userID uint, data dtoClient.CartFinalizeDTO) (*client.OrderResource, error)
+}
+
+type DiscountServiceInterface interface {
+	Validate(dto *dtoClient.ValidateDiscountDTO, userID int) (*client.DiscountValidationResource, error)
 }

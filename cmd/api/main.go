@@ -60,6 +60,7 @@ func main() {
 	routers.ProductRouter(apiV1, c)
 	routers.OrderRouter(apiV1, c)
 	routers.CartRouter(apiV1, c)
+	routers.DiscountRouter(apiV1, c)
 
 	runPort := fmt.Sprintf(":%d", config.Cfg.Server.Port)
 	log.Printf("Server is running at http://localhost%s\n", runPort)

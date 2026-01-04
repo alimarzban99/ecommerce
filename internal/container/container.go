@@ -26,6 +26,8 @@ type Container struct {
 	ProductRepository          repository.ProductRepositoryInterface
 	CategoryRepository         repository.CategoryRepositoryInterface
 	OrderRepository            repository.OrderRepositoryInterface
+	TransactionRepository      repository.TransactionRepositoryInterface
+	DiscountRepository         repository.DiscountRepositoryInterface
 
 	// Services
 	AuthService        service.AuthServiceInterface
@@ -34,7 +36,10 @@ type Container struct {
 	ProductService     service.ProductServiceInterface
 	CategoryService    service.CategoryServiceInterface
 	OrderService       service.OrderServiceInterface
+	TransactionService service.TransactionServiceInterface
+	WalletService      service.WalletServiceInterface
 	CartService        service.CartServiceInterface
+	DiscountService    service.DiscountServiceInterface
 }
 
 // NewContainer creates a new dependency injection container
@@ -47,6 +52,8 @@ func NewContainer(db *gorm.DB, privateKey *rsa.PrivateKey, publicKey *rsa.Public
 	productRepo := repository.NewProductRepository()
 	categoryRepo := repository.NewCategoryRepository()
 	orderRepo := repository.NewOrderRepository()
+	transactionRepo := repository.NewTransactionRepository()
+	discountRepo := repository.NewDiscountRepository()
 
 	// Initialize services with injected repositories
 	authService := serviceAuth.NewAuthServiceWithDeps(
@@ -60,6 +67,9 @@ func NewContainer(db *gorm.DB, privateKey *rsa.PrivateKey, publicKey *rsa.Public
 	productService := serviceClient.NewProductServiceWithDeps(productRepo)
 	categoryService := serviceClient.NewCategoryServiceWithDeps(categoryRepo)
 	orderService := serviceClient.NewOrderServiceWithDeps(orderRepo)
+	transactionService := serviceClient.NewTransactionService(transactionRepo)
+	walletService := serviceClient.NewWalletService(transactionRepo)
+	discountService := serviceClient.NewDiscountService(discountRepo, orderRepo)
 	cartService := serviceClient.NewCartServiceWithDeps(productRepo, orderRepo)
 
 	return &Container{
@@ -72,12 +82,17 @@ func NewContainer(db *gorm.DB, privateKey *rsa.PrivateKey, publicKey *rsa.Public
 		ProductRepository:          productRepo,
 		CategoryRepository:         categoryRepo,
 		OrderRepository:            orderRepo,
+		TransactionRepository:      transactionRepo,
+		DiscountRepository:         discountRepo,
 		AuthService:                authService,
 		UserService:                userService,
 		UserAddressService:         userAddressService,
 		ProductService:             productService,
 		CategoryService:            categoryService,
 		OrderService:               orderService,
+		TransactionService:         transactionService,
+		WalletService:              walletService,
 		CartService:                cartService,
+		DiscountService:            discountService,
 	}
 }

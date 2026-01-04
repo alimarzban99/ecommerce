@@ -66,3 +66,20 @@ func (r *OrderRepository) List(filter dtoClient.ListOrderDTO) (*PaginatedRespons
 		HasPreviousPage: paginated.HasPreviousPage,
 	}, nil
 }
+
+func (r *OrderRepository) CountDiscountCodeUsed(code string, userId int) (*int, error) {
+
+	var countUse int64
+
+	err := r.database.Model(&model.Order{}).
+		Where("user_id = ?", userId).
+		Where("discount_code = ?", code).
+		Count(&countUse).
+		Error
+
+	if err != nil {
+		return nil, err
+	}
+	countUseInt := int(countUse)
+	return &countUseInt, err
+}
